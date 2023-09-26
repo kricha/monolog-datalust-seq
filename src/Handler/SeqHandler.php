@@ -49,7 +49,7 @@ class SeqHandler extends AbstractProcessingHandler
     protected function send(string $message): void
     {
         $ch = curl_init();
-        $url = rtrim($this->serverUri, '/').'/'.self::SEQ_API_URI;
+        $url = rtrim($this->serverUri, '/').'/'.self::SEQ_API_URI . '&apiKey='.$this->apiKey;
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
@@ -57,7 +57,6 @@ class SeqHandler extends AbstractProcessingHandler
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(json_decode($message)));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type' => 'application/vnd.serilog.clef',
-            'X-Seq-ApiKey' => $this->apiKey,
         ]);
 
         $result = Util::execute($ch);
@@ -65,6 +64,7 @@ class SeqHandler extends AbstractProcessingHandler
             throw new \RuntimeException('Seq API error. No response');
         }
         $result = json_decode($result, true);
+
         if (array_key_exists('Error', $result)) {
             throw new \RuntimeException('Seq request error: '.$result['Error']);
         }
